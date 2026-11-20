@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pharmacy Inventory & Dispensing Dashboard</title>
+<style>
+:root{--bg:#f4f7fb;--card:#fff;--ink:#17243a;--muted:#718096;--line:#e8edf4;--blue:#3267d6;--teal:#0e9f91;--amber:#e6a23c;--red:#dc5964;--purple:#8164c8;--shadow:0 8px 24px rgba(28,48,80,.06)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,"Noto Sans Thai",Tahoma,sans-serif;font-size:14px}
+.app{max-width:1480px;margin:auto;padding:28px 30px 40px}.top{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;margin-bottom:22px}
+h1{font-size:25px;margin:0 0 6px;letter-spacing:-.4px}.sub{color:var(--muted);font-size:13px}.asof{background:#eaf0ff;color:#3159ac;padding:9px 13px;border-radius:10px;font-weight:700;white-space:nowrap}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin:18px 0 20px;align-items:center}.toolbar label{font-size:12px;color:var(--muted)}select,input{border:1px solid var(--line);background:#fff;border-radius:9px;padding:9px 11px;color:var(--ink);outline:none}
+.btn{border:0;background:#eaf0ff;color:#3159ac;padding:10px 14px;border-radius:9px;font-weight:700;cursor:pointer}
+.section-title{display:flex;align-items:center;justify-content:space-between;margin:24px 0 12px}.section-title h2{font-size:16px;margin:0}.section-title span{font-size:12px;color:var(--muted)}
+.kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}.card{background:var(--card);border:1px solid var(--line);border-radius:15px;box-shadow:var(--shadow)}
+.kpi{padding:17px 18px;min-height:122px;position:relative;overflow:hidden}.kpi:after{content:"";position:absolute;width:72px;height:72px;border-radius:50%;right:-20px;top:-20px;background:var(--tint)}.k-label{font-size:12px;color:var(--muted);margin-bottom:10px}.k-value{font-size:27px;font-weight:800;letter-spacing:-.7px}.k-note{font-size:11px;color:var(--muted);margin-top:6px}.dot{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:5px;background:var(--tone)}
+.grid{display:grid;grid-template-columns:1.35fr 1fr;gap:14px}.grid.equal{grid-template-columns:1fr 1fr}.panel{padding:18px;min-width:0}.panel-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:14px}.panel h3{font-size:14px;margin:0 0 4px}.hint{font-size:11px;color:var(--muted)}.chart{height:250px;position:relative}.chart canvas{width:100%;height:100%}
+.legend{display:flex;gap:13px;flex-wrap:wrap;font-size:11px;color:var(--muted)}.legend i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
+.alert-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}.alert{padding:13px 14px;border-radius:11px;background:#fff;border:1px solid var(--line)}.alert strong{font-size:19px;display:block}.alert span{font-size:11px;color:var(--muted)}
+.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;white-space:nowrap}th{text-align:left;color:var(--muted);font-size:11px;font-weight:600;padding:10px 9px;border-bottom:1px solid var(--line)}td{padding:11px 9px;border-bottom:1px solid #f0f3f7;font-size:12px}tbody tr:hover{background:#f8faff}.pill{padding:4px 8px;border-radius:20px;font-size:10px;font-weight:700}.danger{background:#fff0f1;color:#c43f4a}.warn{background:#fff7e8;color:#a86a09}.ok{background:#eaf8f4;color:#16836f}.muted{color:var(--muted)}.split{display:grid;grid-template-columns:1fr 1fr;gap:14px}.search{min-width:190px}
+.footer{font-size:11px;color:var(--muted);margin-top:20px;line-height:1.7}.empty{text-align:center;padding:22px;color:var(--muted)}
+@media(max-width:1050px){.kpis{grid-template-columns:repeat(3,1fr)}.grid,.grid.equal{grid-template-columns:1fr}.split{grid-template-columns:1fr}}
+@media(max-width:650px){.app{padding:18px 13px}.top{display:block}.asof{display:inline-block;margin-top:12px}.kpis{grid-template-columns:repeat(2,1fr)}.k-value{font-size:22px}.alert-strip{grid-template-columns:repeat(2,1fr)}}
+
+/* Bentley-inspired visual system: Race Green, near-black, featherweight type, square geometry */
+:root{--bm-green:#394d45;--bm-teal:#637a77;--bg:#040404;--card:#0b0d0c;--ink:#f4f5f4;--muted:#a4aaa6;--line:rgba(255,255,255,.16);--blue:#637a77;--teal:#637a77;--amber:#c6a36b;--red:#c77b78;--purple:#9b9b9b;--shadow:none;--surface:#101311}
+body{background:var(--bg);color:var(--ink);font-family:"Raleway","Noto Sans Thai",Arial,sans-serif;font-weight:300;letter-spacing:.12px}
+.app{max-width:1500px;padding:34px 42px 48px}
+h1{font-size:40px;font-weight:300;letter-spacing:0;line-height:1.15}
+.sub,.hint,.k-note,.footer{font-weight:300}
+.asof{background:transparent;color:#d9e0dc;border:1px solid var(--line);border-radius:0;font-weight:400;letter-spacing:1px;text-transform:uppercase;font-size:11px}
+.toolbar{border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:16px 0}
+.toolbar label,.section-title span{letter-spacing:1px;text-transform:uppercase;font-size:10px;font-weight:400}
+select,input{background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:0}
+.btn{background:var(--bm-green);color:#fff;border:1px solid var(--bm-green);border-radius:0;font-weight:300;letter-spacing:.2px}
+.btn:hover{background:#496257}
+.section-title{margin:32px 0 14px;border-bottom:1px solid var(--line);padding-bottom:10px}
+.section-title h2{font-size:22px;font-weight:300}
+.card{background:var(--card);border:1px solid var(--line);border-radius:0;box-shadow:none}
+.kpi{padding:20px;min-height:126px}
+.kpi:after{display:none}
+.k-label{font-size:11px;letter-spacing:1px;text-transform:uppercase}
+.k-value{font-size:31px;font-weight:300;letter-spacing:0}
+.panel{padding:20px}
+.panel h3{font-size:16px;font-weight:300}
+.alert{background:var(--card);border:1px solid var(--line);border-radius:0}
+.alert strong{font-weight:300}
+table{white-space:nowrap}
+th{font-weight:400;letter-spacing:.8px;text-transform:uppercase;border-bottom:1px solid var(--line)}
+td{border-bottom:1px solid rgba(255,255,255,.08);font-weight:300}
+tbody tr:hover{background:rgba(57,77,69,.24)}
+.pill{border-radius:0;font-weight:400;letter-spacing:.2px}
+.danger{background:rgba(199,123,120,.16);color:#e2a5a2}
+.warn{background:rgba(198,163,107,.16);color:#d8bb8d}
+.ok{background:rgba(57,77,69,.35);color:#a8c2b5}
+.muted{color:var(--muted)}
+.theme-toggle{display:inline-flex;align-items:center;gap:8px}
+.theme-toggle .theme-icon{font-size:15px}
+.order-summary{display:flex;gap:18px;flex-wrap:wrap;color:var(--muted);font-size:12px}
+.order-summary strong{color:var(--ink);font-weight:400}
+.qty-input{width:88px;padding:7px 8px}
+/* Bentley light mode: pure white canvas, ink typography, Race Green accents */
+.light-mode{--bg:#ffffff;--card:#ffffff;--ink:#040404;--muted:#666d69;--line:#e3e6e4;--surface:#ffffff;--shadow:none}
+html[data-theme="light"]{--bg:#ffffff;--card:#ffffff;--ink:#040404;--muted:#666d69;--line:#e3e6e4;--surface:#ffffff;--bm-green:#394d45;--bm-teal:#637a77;--blue:#394d45;--teal:#637a77;--amber:#a88755;--red:#a96865;--purple:#777d79;--shadow:none}
+html[data-theme="light"] body{background:#fff;color:var(--ink);font-family:"Raleway","Noto Sans Thai",Arial,sans-serif;font-weight:300;letter-spacing:.12px}
+html[data-theme="light"] h1{font-weight:300}
+html[data-theme="light"] .asof{background:#fff;color:var(--bm-green);border:1px solid var(--line);border-radius:0}
+html[data-theme="light"] .card,html[data-theme="light"] .alert{background:#fff;border-color:var(--line);border-radius:0;box-shadow:none}
+html[data-theme="light"] select,html[data-theme="light"] input{background:#fff;color:var(--ink);border-color:var(--line);border-radius:0}
+html[data-theme="light"] .btn{background:var(--bm-green);color:#fff;border:1px solid var(--bm-green);border-radius:0;font-weight:300}
+html[data-theme="light"] .btn:hover{background:#496257}
+html[data-theme="light"] .section-title{border-bottom-color:var(--line)}
+html[data-theme="light"] th{border-bottom-color:var(--line)}
+html[data-theme="light"] td{border-bottom-color:#edf0ed}
+html[data-theme="light"] tbody tr:hover{background:#f6f8f6}
+html[data-theme="light"] .muted{color:var(--muted)}
+html[data-theme="light"] .danger{background:#f8eeee;color:#96504d}
+html[data-theme="light"] .warn{background:#f7f2e9;color:#876b3e}
+html[data-theme="light"] .ok{background:#edf3ef;color:#496b57}
+html[data-theme="light"] .pill{border-radius:0}
+html[data-theme="light"] .k-value,html[data-theme="light"] .alert strong{font-weight:300}
+@media(max-width:1050px){.app{padding:25px 22px 36px}}
+@media(max-width:650px){.app{padding:18px 13px}.top{display:flex;flex-direction:column}h1{font-size:31px}.toolbar{align-items:stretch}}
+
+</style></head>
+<body><main class="app">
+<header class="top"><div><h1>Pharmacy Operations Dashboard</h1><div class="sub">ภาพรวมคลังยาและประวัติการจ่ายยา · Stock เป็นแกนหลัก / Dispense log ใช้วิเคราะห์การเคลื่อนไหว</div></div><div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap"><a class="btn" href="./drug_dashboard.html" style="text-decoration:none">ทะเบียนยา</a><div class="asof">กำลังโหลดข้อมูล…</div></div><button class="btn theme-toggle" id="themeToggle" type="button"><span class="theme-icon" id="themeIcon">☼</span><span id="themeLabel">Light mode</span></button></div></header>
+<div class="toolbar">
+ <label>ช่วงเวลาการจ่าย</label><input type="date" id="from"><span class="muted">ถึง</span><input type="date" id="to">
+ <label>ค้นหายา / SKU</label><input class="search" id="search" placeholder="เช่น METF500, Metformin">
+ <button class="btn" id="reset">รีเซ็ตตัวกรอง</button>
+</div>
+<div class="section-title"><h2>ภาพรวมสำคัญ</h2><span>ตัวเลขปรับตามช่วงวันที่ ยกเว้นตัวเลขคลังซึ่งยึดวัน as_of</span></div>
+<section class="kpis" id="kpis"></section>
+<div class="section-title"><h2>แนวโน้มการจ่ายยา</h2><span>ใช้ดูปริมาณงานและรายการยาที่มีการเคลื่อนไหวสูง</span></div>
+<section class="grid">
+ <article class="card panel"><div class="panel-head"><div><h3>ปริมาณจ่ายรายวัน</h3><div class="hint">จำนวนหน่วยยารวมต่อวัน · จาก dispense log</div></div><div class="legend"><span><i style="background:#394d45"></i>จำนวนจ่าย</span></div></div><div class="chart"><canvas id="dailyChart"></canvas></div></article>
+ <article class="card panel"><div class="panel-head"><div><h3>ยา 8 อันดับที่จ่ายมากที่สุด</h3><div class="hint">เรียงตามจำนวนหน่วยที่จ่ายในช่วงวันที่เลือก</div></div></div><div class="chart"><canvas id="topChart"></canvas></div></article>
+</section>
+<div class="section-title"><h2>สถานะคลังและความเสี่ยง</h2><span>คำนวณจากยอดคงเหลือรายล็อต และ reorder_level ใน drug master</span></div>
+<section class="grid equal">
+ <article class="card panel"><div class="panel-head"><div><h3>สถานะ SKU เทียบจุดสั่งซื้อ</h3><div class="hint">รวม qty_on_hand ทุกล็อตต่อ SKU ก่อนเทียบ reorder_level</div></div></div><div class="chart"><canvas id="stockChart"></canvas></div><div class="legend" id="stockLegend"></div></article>
+ <article class="card panel"><div class="panel-head"><div><h3>ล็อตยาใกล้หมดอายุ</h3><div class="hint">แสดงจำนวนคงเหลือในล็อตที่หมดอายุแล้ว / ภายใน 90 วันจาก 02 พ.ย. 2026</div></div></div><div class="chart"><canvas id="expiryChart"></canvas></div><div class="legend"><span><i style="background:#dc5964"></i>หมดอายุแล้ว</span><span><i style="background:#c6a36b"></i>ภายใน 90 วัน</span></div></article>
+</section>
+<div class="alert-strip" id="alerts"></div>
+<div class="section-title"><h2>รายการที่ควรตรวจสอบ</h2><span>เรียงรายการที่ต้องดำเนินการก่อน</span></div>
+<section class="card panel"><div class="panel-head"><div><h3>Stock alert by lot</h3><div class="hint">ล็อตหมดอายุ, ยอดติดลบ, และรายการใกล้หมดอายุ</div></div><input class="search" id="alertSearch" placeholder="ค้นหา SKU / lot"></div><div id="dispenseSummary" class="hint" style="margin:8px 0 12px"></div><div class="table-wrap"><table><thead><tr><th>SKU</th><th>ชื่อยา</th><th>Lot</th><th>คงเหลือ</th><th>วันหมดอายุ</th><th>สถานะ</th></tr></thead><tbody id="alertRows"></tbody></table></div></section>
+
+<div class="section-title"><h2>แผนการสั่งซื้อ</h2><span>รายการแนะนำจาก SKU ที่ต่ำกว่า reorder level</span></div>
+<section class="card panel">
+ <div class="panel-head"><div><h3>Purchase order suggestions</h3><div class="hint">จำนวนสั่งซื้อขั้นต่ำเพื่อเติมยอดกลับไปถึง reorder level · ยังไม่ใช่ใบสั่งซื้อจริง</div></div><div class="order-summary" id="orderSummary"></div></div>
+ <div id="dispenseSummary" class="hint" style="margin:8px 0 12px"></div><div class="table-wrap"><table><thead><tr><th>SKU</th><th>ชื่อยา</th><th>คงเหลือ</th><th>Reorder level</th><th>แนะนำสั่งเพิ่ม</th><th>สถานะ</th></tr></thead><tbody id="orderRows"></tbody></table></div>
+</section>
+<div class="section-title"><h2>รายการจ่ายยาตามตัวกรอง</h2><span>ไม่แสดง patient_code เพื่อลดข้อมูลระบุตัวบุคคลในหน้าภาพรวม</span></div>
+<section class="card panel"><div class="panel-head"><div><h3>Dispense log</h3><div class="hint">แสดงรายการทั้งหมดตามตัวกรองวันที่และคำค้นหา · ไม่แสดง patient_code</div></div></div><div id="dispenseSummary" class="hint" style="margin:8px 0 12px"></div><div class="table-wrap"><table><thead><tr><th>วัน-เวลา</th><th>Dispense ID</th><th>SKU / ชื่อยา</th><th>Lot</th><th>จำนวน</th><th>ผู้จ่าย</th></tr></thead><tbody id="logRows"></tbody></table></div></section>
+<div class="footer">หมายเหตุการตีความข้อมูล: dispense log มีข้อมูล 150 รายการ ในช่วง 03 ต.ค.–01 พ.ย. 2026; มีรายการ qty = 0 หนึ่งรายการ จึงไม่นับเป็นปริมาณจ่ายจริงในยอดรวม ส่วน drug master มี 100 SKU และ reorder_level เป็นนโยบายสมมติของร้าน<br>ข้อควรตรวจสอบคุณภาพข้อมูล: พบ stock SKU ที่ไม่อยู่ใน drug master, qty_on_hand ติดลบ, วันหมดอายุบางรายการย้อนหลัง/รูปแบบวันที่ต่างกัน และบางล็อตไม่มีวันหมดอายุ Dashboard นี้แสดงสัญญาณเตือนตามข้อมูลดิบ ไม่แก้ไขข้อมูลต้นทางอัตโนมัติ</div>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+let DB={drugs:[],stocks:[],logs:[]};
+let drugs=new Map(),asOf='2026-11-02',stockBySku={},totalStock=0,activeStockValue=0,lowSkus=[],expired=[],soon=[],neg=[],quarantine=[];
+const fmt=n=>Number(n||0).toLocaleString('th-TH',{maximumFractionDigits:2});
+const dateOnly=s=>s?new Date(s+'T00:00:00'):null;
+function expDate(s){if(!s)return null;let m=String(s).match(/^(\d{4})-(\d{2})-(\d{2})$/);if(m)return new Date(+m[1],+m[2]-1,+m[3]);m=String(s).match(/^(\d{2})\/(\d{2})\/(\d{4})$/);if(m)return new Date(+m[3],+m[2]-1,+m[1]);return null}
+function escapeHTML(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function cleanItems(items){return (items||[]).map(row=>Object.fromEntries(Object.entries(row).map(([k,v])=>[k,typeof v==='string'?escapeHTML(v):v])))}
+function rebuildData(){
+ drugs=new Map(DB.drugs.map(d=>[d.sku,d]));
+ stockBySku={};
+ DB.stocks.forEach(s=>{
+   const valid=s.status==='active' && String(s.expiry||'')>=asOf && Number(s.qty_on_hand)>0;
+   if(valid) stockBySku[s.sku]=(stockBySku[s.sku]||0)+Number(s.qty_on_hand||0);
+ });
+ totalStock=Object.values(stockBySku).reduce((a,n)=>a+n,0);
+ activeStockValue=DB.stocks.filter(s=>s.status==='active'&&String(s.expiry||'')>=asOf&&Number(s.qty_on_hand)>0)
+   .reduce((a,s)=>a+Number(s.qty_on_hand||0)*Number(s.unit_cost||0),0);
+ lowSkus=DB.drugs.filter(d=>(stockBySku[d.sku]||0)<Number(d.reorder_level||0));
+ expired=DB.stocks.filter(s=>s.expiry&&String(s.expiry).slice(0,10)<asOf&&Number(s.qty_on_hand)>0);
+ soon=DB.stocks.filter(s=>s.status==='active'&&s.expiry&&String(s.expiry).slice(0,10)>=asOf&&String(s.expiry).slice(0,10)<=addDays(asOf,90)&&Number(s.qty_on_hand)>0);
+ neg=DB.stocks.filter(s=>Number(s.qty_on_hand)<0);
+ quarantine=DB.stocks.filter(s=>s.status==='quarantine');
+}
+function addDays(iso,days){const d=new Date(iso+'T00:00:00');d.setDate(d.getDate()+days);return d.toISOString().slice(0,10)}
+async function loadData(){
+ // เรียก API ของ Vercel เท่านั้น ไม่เชื่อมต่อ Supabase จากหน้าเว็บโดยตรง
+ try{
+   const response=await fetch('/api/data',{cache:'no-store',signal:AbortSignal.timeout(8000)});
+   if(!response.ok) throw new Error('API status '+response.status);
+   const payload=await response.json();
+   if(!payload?.drugs?.items||!payload?.stock?.items||!payload?.dispense_log?.items) throw new Error('รูปแบบข้อมูล API ไม่ครบ');
+   DB={drugs:cleanItems(payload.drugs.items),stocks:cleanItems(payload.stock.items),logs:cleanItems(payload.dispense_log.items)};
+   asOf=payload.stock.meta?.as_of||payload.drugs.meta?.as_of||asOf;
+   setSourceBadge(true,asOf);
+ }catch(error){
+   // ทางสำรอง: อ่าน JSON ภายในโฟลเดอร์ data เมื่อ API ใช้ไม่ได้หรือหมดเวลา 8 วินาที
+   const [d,s,l]=await Promise.all([fetch('./data/drugs_update.json'),fetch('./data/stock.json'),fetch('./data/dispense-log.json')]);
+   if(!d.ok||!s.ok||!l.ok) throw new Error('ไม่สามารถโหลดข้อมูล API หรือไฟล์สำรองได้');
+   const [dj,sj,lj]=await Promise.all([d.json(),s.json(),l.json()]);
+   DB={drugs:cleanItems(dj.items),stocks:cleanItems(sj.items),logs:cleanItems(lj.items)};
+   asOf=sj.meta?.as_of||asOf;
+   setSourceBadge(false,asOf);
+ }
+ rebuildData();
+}
+function setSourceBadge(live,date){
+ const box=document.querySelector('.asof');
+ if(box){box.textContent=live?`ข้อมูลจาก Supabase · ${date}`:`ข้อมูลสำรองจากไฟล์ (ไม่ใช่ข้อมูลล่าสุด) · ${date}`;
+ box.style.background=live?'#e5f7ed':'#fff3cd';box.style.color=live?'#187344':'#8a6500';}
+}
+function filteredLogs(){let a=$('from').value,b=$('to').value,q=$('search').value.toLowerCase().trim();return DB.logs.filter(x=>{let day=x.datetime.slice(0,10),d=drugs.get(x.sku);return(!a||day>=a)&&(!b||day<=b)&&(!q||[x.sku,d?.generic_name,d?.strength].join(' ').toLowerCase().includes(q))})}
+function kpi(label,value,note,tone,tint){return `<div class="card kpi" style="--tone:${tone};--tint:${tint}"><div class="k-label"><span class="dot"></span>${label}</div><div class="k-value">${value}</div><div class="k-note">${note}</div></div>`}
+function renderKpis(logs){
+ const dispenses=logs.filter(x=>(x.type||'dispense')==='dispense');
+ const voids=logs.filter(x=>x.type==='void'),returns=logs.filter(x=>x.type==='return');
+ $('kpis').innerHTML=[
+ kpi('SKU ที่มี Stock',`${Object.keys(stockBySku).length} / ${DB.drugs.length}`,'นับเฉพาะล็อต Active ที่ยังไม่หมดอายุ','#3267d6','#edf2ff'),
+ kpi('ถึงจุดสั่งซื้อ',fmt(lowSkus.length),lowSkus.map(x=>x.sku).join(', ')||'ไม่มีรายการ','#c6a36b','#fff6e5'),
+ kpi('ใกล้หมดอายุ ≤90 วัน',fmt(soon.length),'ล็อตที่ยังมีของและเป็น Active','#a96865','#fff0f1'),
+ kpi('ล็อตกักกัน',fmt(quarantine.length),'ไม่รวมในยอดใช้ได้','#777d79','#f2edff'),
+ kpi('มูลค่าสต็อก Active','฿'+fmt(activeStockValue),'คำนวณจาก qty_on_hand × unit_cost','#0e9f91','#e8f8f4')
+ ].join('');
+ const summary=$('dispenseSummary');
+ if(summary) summary.innerHTML=`รายการจ่าย <b>${dispenses.length}</b> · Void <b>${voids.length}</b> · Return <b>${returns.length}</b> · SKU ที่จ่าย <b>${new Set(dispenses.map(x=>x.sku)).size}</b> · รหัสผู้รับยา <b>${new Set(dispenses.map(x=>x.patient_code).filter(Boolean)).size}</b>`;
+}
+function chartTheme(){let dark=document.documentElement.dataset.theme!=='light';return {grid:dark?'rgba(255,255,255,.13)':'#edf1f6',text:dark?'#a4aaa6':'#8390a4',barBg:dark?'#202723':'#edf1f7',bar:dark?'#637a77':'#394d45',ink:dark?'#f4f5f4':'#17243a'}}
+function setupCanvas(id){let c=$(id),r=c.getBoundingClientRect(),dpr=window.devicePixelRatio||1;c.width=r.width*dpr;c.height=r.height*dpr;let ctx=c.getContext('2d');ctx.scale(dpr,dpr);return {ctx,w:r.width,h:r.height}}
+function darkColorAlpha(){return document.documentElement.dataset.theme==='light'?'rgba(57,77,69,.18)':'rgba(99,122,119,.30)'}
+function lineChart(id,labels,values){let {ctx:c,w,h}=setupCanvas(id),L=42,R=12,T=12,B=30,pw=w-L-R,ph=h-T-B,max=Math.max(1,...values)*1.15;let th=chartTheme();c.font='10px Tahoma';c.strokeStyle=th.grid;c.fillStyle=th.text;for(let i=0;i<4;i++){let y=T+ph*i/3;c.beginPath();c.moveTo(L,y);c.lineTo(w-R,y);c.stroke();c.fillText(fmt(max*(1-i/3)),3,y+3)}if(!values.length)return;let pts=values.map((v,i)=>[L+(values.length===1?pw/2:i*pw/(values.length-1)),T+ph-(v/max)*ph]);c.beginPath();pts.forEach((p,i)=>i?c.lineTo(...p):c.moveTo(...p));c.strokeStyle=th.bar;c.lineWidth=2.5;c.stroke();let grad=c.createLinearGradient(0,T,0,T+ph);grad.addColorStop(0,darkColorAlpha());grad.addColorStop(1,'rgba(0,0,0,0)');c.lineTo(pts.at(-1)[0],T+ph);c.lineTo(pts[0][0],T+ph);c.closePath();c.fillStyle=grad;c.fill();pts.forEach((p,i)=>{c.beginPath();c.arc(p[0],p[1],3,0,Math.PI*2);c.fillStyle=th.bar;c.fill();if(i%Math.max(1,Math.ceil(labels.length/8))===0||i===labels.length-1){c.fillStyle=th.text;c.fillText(labels[i].slice(5),p[0]-14,h-8)}})}
+function barChart(id,items){let {ctx:c,w,h}=setupCanvas(id),L=105,R=35,T=8,B=8,row=(h-T-B)/Math.max(items.length,1),max=Math.max(1,...items.map(x=>x.v));c.font='10px Tahoma';items.forEach((x,i)=>{let y=T+i*row+row*.22,bh=Math.min(18,row*.55),bw=(w-L-R)*x.v/max;let th=chartTheme();c.fillStyle=th.text;c.fillText(x.name.slice(0,15),2,y+bh*.8);c.fillStyle=th.barBg;c.fillRect(L,y,w-L-R,bh);c.fillStyle=th.bar;c.fillRect(L,y,bw,bh);c.fillStyle=th.text;c.fillText(fmt(x.v),Math.min(w-R+2,L+bw+5),y+bh*.8)})}
+function donut(id,values,colors){let {ctx:c,w,h}=setupCanvas(id),sum=values.reduce((a,b)=>a+b,0),cx=w/2,cy=h/2,r=Math.min(w,h)*.37,inner=r*.62,start=-Math.PI/2;if(!sum){c.fillStyle='#9aa5b5';c.font='12px Tahoma';c.textAlign='center';c.fillText('ไม่มีข้อมูล',cx,cy);return}values.forEach((v,i)=>{let end=start+v/sum*Math.PI*2;c.beginPath();c.arc(cx,cy,r,start,end);c.arc(cx,cy,inner,end,start,true);c.closePath();c.fillStyle=colors[i];c.fill();start=end});c.textAlign='center';c.fillStyle=chartTheme().ink;c.font='300 23px Tahoma';c.fillText(fmt(sum),cx,cy+2);c.fillStyle='#8390a4';c.font='10px Tahoma';c.fillText('SKU / lots',cx,cy+19)}
+function renderAlerts(){let rows=DB.stocks.map(s=>{let e=expDate(s.expiry),status=s.qty_on_hand<0?'ยอดติดลบ':e&&String(s.expiry).slice(0,10)<asOf&&s.qty_on_hand>0?'หมดอายุแล้ว':e&&s.status==='active'&&String(s.expiry).slice(0,10)>=asOf&&String(s.expiry).slice(0,10)<=addDays(asOf,90)&&s.qty_on_hand>0?'ใกล้หมดอายุ':null;return status?{s,e,status}:null}).filter(Boolean).sort((a,b)=>{let rank=x=>x.status==='ยอดติดลบ'?0:x.status==='หมดอายุแล้ว'?1:2;return rank(a)-rank(b)||(a.e-b.e)});let q=$('alertSearch').value.toLowerCase();rows=rows.filter(x=>(x.s.sku+' '+x.s.lot).toLowerCase().includes(q));$('alertRows').innerHTML=rows.map(x=>`<tr><td><b>${x.s.sku}</b></td><td>${drugs.get(x.s.sku)?.generic_name||'ไม่พบใน drug master'}</td><td>${x.s.lot}</td><td>${fmt(x.s.qty_on_hand)}</td><td>${x.s.expiry||'ไม่ระบุ'}</td><td><span class="pill ${x.status==='ใกล้หมดอายุ'?'warn':'danger'}">${x.status}</span></td></tr>`).join('')||'<tr><td colspan="6" class="empty">ไม่พบรายการ</td></tr>'}
+
+function renderOrders(){
+ const items=lowSkus.map(d=>({d,qty:stockBySku[d.sku]||0,gap:Math.max(0,Number(d.reorder_level||0)-(stockBySku[d.sku]||0))}))
+ .sort((a,b)=>b.gap-a.gap);
+ $('orderRows').innerHTML=items.map(x=>`<tr><td><b>${x.d.sku}</b></td><td>${x.d.generic_name}<div class="muted">${x.d.strength||''} ${x.d.dosage_form||''}</div></td><td>${fmt(x.qty)} ${x.d.unit||''}</td><td>${fmt(x.d.reorder_level)} ${x.d.unit||''}</td><td><b>${fmt(x.gap)}</b> ${x.d.unit||''}</td><td><span class="pill ${x.qty<0?'danger':'warn'}">${x.qty<0?'ตรวจสอบยอดติดลบ':'รอสั่งซื้อ'}</span></td></tr>`).join('')||'<tr><td colspan="6" class="empty">ไม่มี SKU ต่ำกว่าจุดสั่งซื้อ</td></tr>';
+ $('orderSummary').innerHTML=`<span><strong>${items.length}</strong> SKU ที่ควรสั่ง</span><span>รวมจำนวนแนะนำ <strong>${fmt(items.reduce((a,x)=>a+x.gap,0))}</strong> หน่วย</span>`;
+}
+function render(){let logs=filteredLogs();renderKpis(logs);let daily={};logs.filter(x=>(x.type||'dispense')==='dispense').forEach(x=>{let d=x.datetime.slice(0,10);daily[d]=(daily[d]||0)+Math.max(0,x.qty)});let days=Object.keys(daily).sort();lineChart('dailyChart',days,days.map(d=>daily[d]));let tops={};logs.filter(x=>(x.type||'dispense')==='dispense').forEach(x=>tops[x.sku]=(tops[x.sku]||0)+Math.max(0,x.qty));barChart('topChart',Object.entries(tops).sort((a,b)=>b[1]-a[1]).slice(0,8).map(([sku,v])=>({name:sku,v})));
+let healthy=DB.drugs.length-lowSkus.length;donut('stockChart',[healthy,lowSkus.length],['#637a77','#c6a36b']);$('stockLegend').innerHTML=`<span><i style="background:#637a77"></i>ถึงจุดสั่งซื้อ ${healthy} SKU</span><span><i style="background:#c6a36b"></i>ต่ำกว่า reorder ${lowSkus.length} SKU</span>`;
+donut('expiryChart',[expired.length,soon.length],['#a96865','#c6a36b']);$('alerts').innerHTML=[['ล็อตหมดอายุ',expired.length,'ยังมีสินค้า '+fmt(expired.reduce((a,s)=>a+s.qty_on_hand,0))+' หน่วย','#a96865'],['ล็อตใกล้หมดอายุ',soon.length,'ภายใน 90 วัน','#c6a36b'],['ยอดคงเหลือติดลบ',neg.length,'ต้องตรวจสอบ stock movement','#a96865'],['ไม่มีวันหมดอายุ',DB.stocks.filter(s=>!s.expiry).length,'ควรเติมข้อมูล lot','#777d79']].map(x=>`<div class="alert"><span>${x[0]}</span><strong style="color:${x[3]}">${x[1]}</strong><span>${x[2]}</span></div>`).join('');
+renderAlerts();renderOrders();let q=$('search').value.toLowerCase();let recent=[...logs].filter(x=>!q||[x.sku,drugs.get(x.sku)?.generic_name].join(' ').toLowerCase().includes(q)).sort((a,b)=>b.datetime.localeCompare(a.datetime));$('logRows').innerHTML=recent.map(x=>`<tr><td>${x.datetime.replace('T',' ').slice(0,16)}</td><td>${x.dispense_id}</td><td><b>${x.sku}</b><div class="muted">${drugs.get(x.sku)?.generic_name||'ไม่พบ master'}</div></td><td>${x.lot}</td><td>${fmt(x.qty)}</td><td>${x.pharmacist_code}</td></tr>`).join('')||'<tr><td colspan="6" class="empty">ไม่พบรายการ</td></tr>'}
+async function startDashboard(){
+ try{
+  await loadData();
+  $('from').value=DB.logs.map(x=>x.datetime.slice(0,10)).sort()[0]||asOf;
+  $('to').value=DB.logs.map(x=>x.datetime.slice(0,10)).sort().at(-1)||asOf;
+  ['from','to','search'].forEach(id=>$(id).addEventListener('input',render));
+  $('alertSearch').addEventListener('input',renderAlerts);
+  $('reset').onclick=()=>{$('from').value=DB.logs.map(x=>x.datetime.slice(0,10)).sort()[0]||asOf;$('to').value=DB.logs.map(x=>x.datetime.slice(0,10)).sort().at(-1)||asOf;$('search').value='';render()};
+  window.addEventListener('resize',render);
+  $('themeToggle').addEventListener('click',()=>setTheme(document.documentElement.dataset.theme==='dark'?'light':'dark'));
+  setTheme(localStorage.getItem('pharmacy-dashboard-theme')||'dark');
+ }catch(err){
+  const box=document.querySelector('.app');
+  if(box) box.insertAdjacentHTML('afterbegin',`<div style="padding:14px;background:#fff3cd;color:#8a6500;border-radius:10px;margin-bottom:14px">ทดสอบผ่านลิงก์ Vercel เท่านั้น (Live Server ไม่รัน /api) — ${escapeHTML(err.message)}</div>`);
+ }
+}
+startDashboard();
+
+</script></body></html>
